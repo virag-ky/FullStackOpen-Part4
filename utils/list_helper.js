@@ -40,9 +40,29 @@ const mostBlogs = (blogs) => {
   return { author: allAuthors[index], blogs: maxBlogs };
 };
 
+const mostLikes = (blogs) => {
+  if (blogs.length === 0) {
+    return [];
+  }
+
+  const groups = _.groupBy(blogs, 'author');
+  const allLikes = [];
+  const allAuthors = Object.keys(groups);
+  for (let group in groups) {
+    allLikes.push(
+      groups[group].reduce((acc, author) => (acc += author.likes), 0)
+    );
+  }
+  const maxLikes = Math.max(...allLikes);
+  const index = allLikes.indexOf(maxLikes);
+
+  return { author: allAuthors[index], likes: maxLikes };
+};
+
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
   mostBlogs,
+  mostLikes,
 };
