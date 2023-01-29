@@ -68,13 +68,12 @@ test("if the likes property doesn't exist it defaults to the value 0", async () 
     title: 'Computers',
     author: 'John Doe',
     url: 'https://example2.com',
-    likes: '',
   };
 
   await api.post('/api/blogs').send(newBlog);
-  const blogs = helper.blogsInDb();
+  const blogs = await helper.blogsInDb();
 
-  expect(blogs[-1].likes).toBe(0);
+  expect(blogs[blogs.length - 1].likes).toBe(0);
 });
 
 afterAll(async () => {
