@@ -2,11 +2,18 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 const api = supertest(app);
+const helper = require('./test_helper');
 const Blog = require('../models/blog');
 
 beforeEach(async () => {
   await Blog.deleteMany({});
   console.log('cleared');
+
+  const blogObjects = helper.initialBlogs.map((blog) => new Blog(blog));
+  const promiseArray = blogObjects.map((blog) => blog.save());
+  await Promise.all(promiseArray);
+
+  console.log('done');
 });
 
 test('blogs are returned as json', async () => {
@@ -16,16 +23,17 @@ test('blogs are returned as json', async () => {
     .expect('Content-Type', /application\/json/);
 });
 
-test('there are two blogs', async () => {
+test('all blogs returned', async () => {
   const response = await api.get('/api/blogs');
 
-  // expect(response.body).toHaveLength(3);
+  expect(response.body).toHaveLength(helper.initialBlogs.length);
 });
 
-test('the first blog is about study', async () => {
+test('a specific blog is within the returned blogs', async () => {
   const response = await api.get('/api/blogs');
+  const contents = response.body.map((blog) => blog.title);
 
-  expect(response.body[0].title).toBe('Study');
+  expect(contents).toContain('React patterns');
 });
 
 test('unique identifier property is named id and it exist', async () => {
@@ -48,11 +56,25 @@ test('a valid blog can be added', async () => {
     .expect(201)
     .expect('Content-Type', /application\/json/);
 
-  const response = await api.get('/api/blogs');
-  const contents = response.body.map((blog) => blog.title);
+  const blogs = await helper.blogsInDb();
+  expect(blogs).toHaveLength(helper.initialBlogs.length + 1);
 
-  //expect(response.body).toHaveLength(3);
-  expect(contents).toContain('Computer Science');
+  const contents = blogs.map((blog) => blog.title);
+  expect(contents).toContain('Type wars');
+});
+
+test("if the likes property doesn't exist it defaults to the value 0", async () => {
+  const newBlog = {
+    title: 'Computers',
+    author: 'John Doe',
+    url: 'https://example2.com',
+    likes: '',
+  };
+
+  await api.post('/api/blogs').send(newBlog);
+  const blogs = helper.blogsInDb();
+
+  expect(blogs[-1].likes).toBe(0);
 });
 
 afterAll(async () => {
