@@ -1,8 +1,13 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
-
 const api = supertest(app);
+const Blog = require('../models/blog');
+
+beforeEach(async () => {
+  await Blog.deleteMany({});
+  console.log('cleared');
+});
 
 test('blogs are returned as json', async () => {
   await api
