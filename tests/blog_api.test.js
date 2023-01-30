@@ -76,6 +76,15 @@ test("if the likes property doesn't exist it defaults to the value 0", async () 
   expect(blogs[blogs.length - 1].likes).toBe(0);
 });
 
+test('if title or url property is missing respond with status code 400 Bad Request', async () => {
+  const newBlog = {
+    title: 'Computers',
+    author: 'John Doe',
+  };
+
+  api.post('/api/blogs').send(newBlog).expect(400);
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });

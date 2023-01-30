@@ -10,6 +10,7 @@ blogListRouter.get('/', async (request, response) => {
 // Create new blog
 blogListRouter.post('/', async (request, response) => {
   const blog = new Blog(request.body);
+
   if (!blog.likes) {
     blog.likes = 0;
   }
