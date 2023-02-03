@@ -49,7 +49,7 @@ blogListRouter.get('/:id', async (request, response) => {
 // Delete a blog
 blogListRouter.delete('/:id', async (request, response) => {
   const id = request.params.id;
-  const blog = await Blog.findByIdAndRemove(id);
+  await Blog.findByIdAndRemove(id);
   response.status(204).end();
 });
 
