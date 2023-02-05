@@ -4,15 +4,15 @@ const User = require('../models/user');
 
 // Get all blogs
 blogListRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({}).populate('author');
+  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 });
   response.json(blogs);
 });
 
 // Create new blog
 blogListRouter.post('/', async (request, response) => {
   const body = request.body;
-  const users = await User.find({});
-  const user = users.filter((u) => u.username === body.author);
+  const user = await User.findById(body.userId);
+  console.log('User:', user);
 
   const blog = new Blog({
     title: body.title,
@@ -21,13 +21,14 @@ blogListRouter.post('/', async (request, response) => {
     author: body.author,
     user: user._id,
   });
+  console.log('Blog:', blog);
 
   if (!blog.likes) {
     blog.likes = 0;
   }
 
   const savedBlog = await blog.save();
-  user.notes = user.notes.concat(savedNote._id);
+  user.blogs = user.blogs.concat(savedBlog.id);
   await user.save();
 
   response.status(201).json(savedBlog);
