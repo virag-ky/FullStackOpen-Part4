@@ -12,7 +12,6 @@ blogListRouter.get('/', async (request, response) => {
 blogListRouter.post('/', async (request, response) => {
   const body = request.body;
   const user = await User.findById(body.userId);
-  console.log('User:', user);
 
   const blog = new Blog({
     title: body.title,
@@ -21,7 +20,6 @@ blogListRouter.post('/', async (request, response) => {
     author: body.author,
     user: user._id,
   });
-  console.log('Blog:', blog);
 
   if (!blog.likes) {
     blog.likes = 0;
@@ -37,27 +35,32 @@ blogListRouter.post('/', async (request, response) => {
 // Update a blog
 blogListRouter.put('/:id', async (request, response) => {
   const id = request.params.id;
-  const { likes } = request.body;
 
-  const updatedBlog = await Blog.findByIdAndUpdate(id, likes, {
+  const updatedBlog = {
+    ...request.body,
+  };
+
+  const result = await Blog.findByIdAndUpdate(id, updatedBlog, {
     new: true,
-    runValidators: true,
-    context: 'query',
   });
 
-  response.json(updatedBlog);
+  response.json(result);
 });
 
 // Get by ID
 blogListRouter.get('/:id', async (request, response) => {
   const id = request.params.id;
 
-  const blog = await Blog.findById(id);
-
-  if (!blog) {
-    response.status(404).end();
+  if (id.length !== 24) {
+    response.status(400).json({ error: 'invalid id' }).end();
   } else {
-    response.json(blog);
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      response.status(404).end();
+    } else {
+      response.json(blog);
+    }
   }
 });
 

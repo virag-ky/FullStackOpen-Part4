@@ -10,7 +10,12 @@ usersRouter.post('/', async (request, response) => {
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
-  if (!usernames.includes(username)) {
+  if (usernames.includes(username)) {
+    response
+      .status(400)
+      .json({ error: 'expected `username` to be unique' })
+      .end();
+  } else {
     const user = new User({
       username,
       name,

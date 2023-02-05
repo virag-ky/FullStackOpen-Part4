@@ -6,16 +6,16 @@ const api = supertest(app);
 const helper = require('./test_helper');
 const User = require('../models/user');
 
-beforeEach(async () => {
-  await User.deleteMany({});
-
-  const passwordHash = await bcrypt.hash('secret', 10);
-  const user = new User({ username: 'root', passwordHash });
-
-  await user.save();
-}, 10000);
-
 describe('when there is initially one user in db', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+
+    const passwordHash = await bcrypt.hash('secret', 10);
+    const user = new User({ username: 'root', passwordHash });
+
+    await user.save();
+  }, 10000);
+
   test('creation succeeds with a fresh username', async () => {
     const usersAtStart = await helper.usersInDb();
 
@@ -47,13 +47,9 @@ describe('when there is initially one user in db', () => {
       password: 'ws34r5',
     };
 
-    api
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/);
+    const result = await api.post('/api/users').send(newUser).expect(400);
 
-    // expect(result.body.error).toContain('expected `username` to be unique');
+    expect(result.body.error).toContain('expected `username` to be unique');
 
     const usersAtEnd = await helper.usersInDb();
     expect(usersAtEnd).toEqual(usersAtStart);

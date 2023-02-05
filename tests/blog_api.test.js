@@ -4,6 +4,7 @@ const app = require('../app');
 const api = supertest(app);
 const helper = require('./test_helper');
 const Blog = require('../models/blog');
+const { createTestScheduler } = require('jest');
 
 beforeEach(async () => {
   await Blog.deleteMany({});
@@ -56,34 +57,43 @@ describe('viewing a specific blog', () => {
     await api.get(`/api/blogs/${validNonexistingId}`).expect(404);
   });
 
-  // test('fails with status code 400 when id is invalid', async () => {
-  //   const invalidId = '63d3ef49095a900fa48edf7';
+  test('fails with status code 400 when id is invalid', async () => {
+    const invalidId = '63d3ef49095a900fa48edf7';
 
-  //   await api.get(`/api/blogs/${invalidId}`).expect(400);
-  // });
+    const res = await api.get(`/api/blogs/${invalidId}`);
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.error).toContain('invalid id');
+  });
 });
 
 describe('updating a specific blog', () => {
-  // test('updates the likes', async () => {
-  //   const blogs = await helper.blogsInDb();
-  //   const blog = blogs[0];
-  //   const updatedBlog = {
-  //     ...blog,
-  //     likes: 20,
-  //   };
-  //   await api.put(`/api/blogs/${blog.id}`).send(updatedBlog);
-  //   const newList = await helper.blogsInDb();
-  //   expect(newList[0].likes).toBe(20);
-  // });
+  test('updates the likes', async () => {
+    const blogs = await helper.blogsInDb();
+    const blog = blogs[0];
+    const updatedBlog = {
+      ...blog,
+      likes: 20,
+    };
+
+    await api.put(`/api/blogs/${blog.id}`).send(updatedBlog);
+
+    const newList = await helper.blogsInDb();
+    expect(newList[0].likes).toBe(20);
+  });
 });
 
 describe('addition of a new blog', () => {
   test('a valid blog can be added', async () => {
+    const users = await helper.usersInDb();
+    const user = users[0];
+
     const newBlog = {
       title: 'Computer Science',
       author: 'Jane Doe',
       url: 'https://example2.com',
       likes: 15,
+      userId: user.id,
     };
 
     await api
@@ -100,10 +110,14 @@ describe('addition of a new blog', () => {
   });
 
   test("if the likes property doesn't exist it defaults to the value 0", async () => {
+    const users = await helper.usersInDb();
+    const user = users[0];
+
     const newBlog = {
       title: 'Computers',
       author: 'John Doe',
       url: 'https://example2.com',
+      userId: user.id,
     };
 
     await api.post('/api/blogs').send(newBlog);
@@ -112,7 +126,7 @@ describe('addition of a new blog', () => {
     expect(blogs[blogs.length - 1].likes).toBe(0);
   });
 
-  test('if title or url property is missing respond with status code 400 Bad Request', async () => {
+  test('if title, author or url property is missing respond with status code 400 Bad Request', async () => {
     const newBlog = {
       title: 'Computers',
       author: 'John Doe',
