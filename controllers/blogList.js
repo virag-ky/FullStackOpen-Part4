@@ -9,7 +9,7 @@ blogListRouter.get('/', async (request, response) => {
 });
 
 // Create new blog
-blogListRouter.post('/', userExtractor, async (request, response) => {
+blogListRouter.post('/', async (request, response) => {
   const body = request.body;
   const user = request.user;
 

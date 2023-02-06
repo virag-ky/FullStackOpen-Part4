@@ -4,14 +4,37 @@ const app = require('../app');
 const api = supertest(app);
 const helper = require('./test_helper');
 const Blog = require('../models/blog');
-const { createTestScheduler } = require('jest');
+const bcrypt = require('bcrypt');
+const User = require('../models/user');
+let token;
 
 beforeEach(async () => {
   await Blog.deleteMany({});
   await Blog.insertMany(helper.initialBlogs);
+  await User.deleteMany({});
+
+  const passwordHash = await bcrypt.hash('secret', 10);
+  const user = new User({ username: 'root', passwordHash });
+
+  await user.save();
+  const res = await api.post('/api/login').send(user);
+
+  token = res.token;
 });
 
 describe('when there is initially some blogs', () => {
+  test('POST/login', async () => {
+    const user = {
+      username: 'root',
+      password: 'secret',
+    };
+
+    const res = await api.post('/api/login').send(user);
+
+    token = res.token;
+    expect(res.statusCode).toEqual(201);
+  });
+
   test('blogs are returned as json', async () => {
     await api
       .get('/api/blogs')
@@ -85,20 +108,17 @@ describe('updating a specific blog', () => {
 
 describe('addition of a new blog', () => {
   test('a valid blog can be added', async () => {
-    const users = await helper.usersInDb();
-    const user = users[0];
-
     const newBlog = {
       title: 'Computer Science',
       author: 'Jane Doe',
       url: 'https://example2.com',
       likes: 15,
-      userId: user.id,
     };
 
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `Bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/);
 
@@ -141,7 +161,10 @@ describe('deletion of a blog', () => {
     const blogs = await helper.blogsInDb();
     const blogToDelete = blogs[0];
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204);
 
     const newList = await helper.blogsInDb();
 
