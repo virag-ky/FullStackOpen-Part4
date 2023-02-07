@@ -8,16 +8,18 @@ import Notification from './components/Notification';
 import BlogForm from './components/BlogForm';
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+  const [url, setUrl] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
   const [message, setMessage] = useState('');
   const [newBlog, setNewBlog] = useState('');
 
-  useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, []);
+  // useEffect(() => {
+  //   blogService.getAll().then((blogs) => setBlogs(blogs));
+  // }, []);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -42,7 +44,15 @@ const App = () => {
   const onChangePassword = ({ target }) => setPassword(target.value);
 
   const addBlog = () => {};
-  const handleBlogChange = ({ target }) => setNewBlog(target.value);
+  const handleBlogChange = ({ target }) => {
+    if (target.name === 'title') {
+      setTitle(target.value);
+    } else if (target.name === 'author') {
+      setAuthor(target.value);
+    } else {
+      setUrl(target.value);
+    }
+  };
 
   const removeMessage = () => {
     setTimeout(() => {
@@ -52,27 +62,33 @@ const App = () => {
 
   return (
     <div>
-      <h2>blogs</h2>
       {!user && (
-        <LoginForm
-          username={username}
-          password={password}
-          handleLogin={handleLogin}
-          onChangeUsername={onChangeUsername}
-          onChangePassword={onChangePassword}
-        />
+        <div>
+          <Notification message={message} />
+          <LoginForm
+            username={username}
+            password={password}
+            handleLogin={handleLogin}
+            onChangeUsername={onChangeUsername}
+            onChangePassword={onChangePassword}
+          />
+        </div>
       )}
       {user && (
-        <BlogForm
-          newBlog={newBlog}
-          addBlog={addBlog}
-          handleBlogChange={handleBlogChange}
-        />
+        <div>
+          <Notification message={message} />
+          <BlogForm
+            newBlog={newBlog}
+            addBlog={addBlog}
+            username={user.username}
+            blogs={user.blogs}
+            title={title}
+            author={author}
+            url={url}
+            handleBlogChange={handleBlogChange}
+          />
+        </div>
       )}
-      <Notification message={message} />
-      {blogs.map((blog) => (
-        <Blog key={blog.id} blog={blog} />
-      ))}
     </div>
   );
 };
