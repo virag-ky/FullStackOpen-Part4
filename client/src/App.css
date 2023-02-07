@@ -1,1 +1,14 @@
+#notification-container {
+  height: auto;
+  width: 100%;
+  margin-bottom: 10px;
+}
 
+#notification {
+  border: solid red;
+  color: red;
+  font-weight: 700;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 14px;
+}
