@@ -13,7 +13,7 @@
   font-size: 14px;
 }
 
-#blog-form {
+form {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -24,12 +24,12 @@
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 10px;
   width: 100%;
 }
 
 input {
   width: 300px;
+  margin-bottom: 10px;
 }
 
 button {
