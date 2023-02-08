@@ -8,6 +8,8 @@ import Notification from './components/Notification';
 import BlogForm from './components/BlogForm';
 
 const App = () => {
+  const [blogs, setBlogs] = useState([]);
+  const [userBlogs, setUserBlogs] = useState([]);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [url, setUrl] = useState('');
@@ -15,11 +17,11 @@ const App = () => {
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
   const [message, setMessage] = useState('');
-  const [newBlog, setNewBlog] = useState('');
+  const [newBlog, setNewBlog] = useState({});
 
-  // useEffect(() => {
-  //   blogService.getAll().then((blogs) => setBlogs(blogs));
-  // }, []);
+  useEffect(() => {
+    blogService.getAll().then((blogs) => setBlogs(blogs));
+  }, []);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser');
@@ -41,13 +43,16 @@ const App = () => {
       });
 
       window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user));
-
       blogService.setToken(user.token);
       setUser(user);
+      const filteredBlogs = blogs.filter(
+        (blog) => blog.user.username === username
+      );
+      setUserBlogs(filteredBlogs);
       setUsername('');
       setPassword('');
     } catch (exception) {
-      setMessage('Wrong credentials');
+      setMessage('Wrong username or password');
       removeMessage();
     }
   };
@@ -57,11 +62,29 @@ const App = () => {
     setUser(null);
   };
 
+  const addBlog = async (event) => {
+    event.preventDefault();
+
+    try {
+      setNewBlog({
+        title,
+        author,
+        url,
+      });
+
+      await blogService.create(newBlog);
+      setTitle('');
+      setAuthor('');
+      setUrl('');
+    } catch (exception) {
+      console.log(exception);
+    }
+  };
+
   const onChangeUsername = ({ target }) => setUsername(target.value);
 
   const onChangePassword = ({ target }) => setPassword(target.value);
 
-  const addBlog = () => {};
   const handleBlogChange = ({ target }) => {
     if (target.name === 'title') {
       setTitle(target.value);
@@ -98,7 +121,7 @@ const App = () => {
           <BlogForm
             addBlog={addBlog}
             username={user.username}
-            blogs={user.blogs}
+            blogs={userBlogs}
             title={title}
             author={author}
             url={url}

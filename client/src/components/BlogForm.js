@@ -48,9 +48,9 @@ const BlogForm = ({
         <button type="submit">Create</button>
       </form>
       {blogs &&
-        blogs.map((blog) => (
-          <p key={blog.id}>
-            {blog.title} - {blog.author}
+        blogs.map((b) => (
+          <p key={b.id}>
+            {b.title} - {b.author}
           </p>
         ))}
     </div>
