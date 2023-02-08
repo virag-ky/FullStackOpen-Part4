@@ -21,15 +21,17 @@ const App = () => {
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, []);
+  }, [newBlog]);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser');
+    const loggedUserBlogs = window.localStorage.getItem('userBlogs');
 
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
       setUser(user);
       blogService.setToken(user.token);
+      setUserBlogs(JSON.parse(loggedUserBlogs));
     }
   }, []);
 
@@ -43,11 +45,16 @@ const App = () => {
       });
 
       window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user));
+
       blogService.setToken(user.token);
       setUser(user);
+
       const filteredBlogs = blogs.filter(
         (blog) => blog.user.username === username
       );
+
+      window.localStorage.setItem('userBlogs', JSON.stringify(filteredBlogs));
+
       setUserBlogs(filteredBlogs);
       setUsername('');
       setPassword('');
@@ -73,6 +80,8 @@ const App = () => {
       });
 
       await blogService.create(newBlog);
+      const newBlogs = [...blogs, newBlog];
+      setBlogs(newBlogs);
       setTitle('');
       setAuthor('');
       setUrl('');
