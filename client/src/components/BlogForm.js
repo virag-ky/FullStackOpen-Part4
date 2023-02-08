@@ -6,11 +6,13 @@ const BlogForm = ({
   author,
   url,
   handleBlogChange,
+  handleLogout,
 }) => {
   return (
     <div>
       <h2>Blogs</h2>
       <p>{username} logged in</p>
+      <button onClick={handleLogout}>Logout</button>
       <h2>Create new blog:</h2>
       <form id="blog-form" onSubmit={addBlog}>
         <div className="input-container">

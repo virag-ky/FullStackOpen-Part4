@@ -52,6 +52,11 @@ const App = () => {
     }
   };
 
+  const handleLogout = () => {
+    window.localStorage.clear();
+    setUser(null);
+  };
+
   const onChangeUsername = ({ target }) => setUsername(target.value);
 
   const onChangePassword = ({ target }) => setPassword(target.value);
@@ -98,6 +103,7 @@ const App = () => {
             author={author}
             url={url}
             handleBlogChange={handleBlogChange}
+            handleLogout={handleLogout}
           />
         </div>
       )}
