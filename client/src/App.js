@@ -23,14 +23,13 @@ const App = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    console.log('logging in with ', username, password);
 
     try {
       const user = await loginService.login({
         username,
         password,
       });
-
+      blogService.setToken(user.token);
       setUser(user);
       setUsername('');
       setPassword('');
@@ -41,6 +40,7 @@ const App = () => {
   };
 
   const onChangeUsername = ({ target }) => setUsername(target.value);
+
   const onChangePassword = ({ target }) => setPassword(target.value);
 
   const addBlog = () => {};
