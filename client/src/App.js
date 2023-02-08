@@ -1,6 +1,5 @@
 import './App.css';
 import { useState, useEffect } from 'react';
-import Blog from './components/Blog';
 import blogService from './services/blogs';
 import LoginForm from './components/LoginForm';
 import loginService from './services/login';
@@ -17,11 +16,10 @@ const App = () => {
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
   const [message, setMessage] = useState('');
-  const [newBlog, setNewBlog] = useState({});
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, [newBlog]);
+  }, []);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser');
@@ -71,17 +69,23 @@ const App = () => {
 
   const addBlog = async (event) => {
     event.preventDefault();
+    const addedBlog = { title, author, url };
+    const userObj = window.localStorage.getItem('loggedBlogAppUser');
+    const parsedUserObj = JSON.parse(userObj);
+
+    window.localStorage.removeItem('userBlogs');
 
     try {
-      setNewBlog({
-        title,
-        author,
-        url,
-      });
+      await blogService.create(addedBlog);
+      const res = await blogService.getAll();
 
-      await blogService.create(newBlog);
-      const newBlogs = [...blogs, newBlog];
-      setBlogs(newBlogs);
+      const filteredBlogs = res.filter(
+        (blog) => blog.user.username === parsedUserObj.username
+      );
+
+      window.localStorage.setItem('userBlogs', JSON.stringify(filteredBlogs));
+
+      setUserBlogs(filteredBlogs);
       setTitle('');
       setAuthor('');
       setUrl('');
